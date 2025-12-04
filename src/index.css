@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Updated cinema booking system colors */
+  --background: 0 0% 5%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 10 100% 50%;
+  --primary-foreground: 0 0% 14.5%;
+  --secondary: 0 0% 27%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 35%;
+  --muted-foreground: 0 0% 70%;
+  --accent: 10 100% 50%;
+  --accent-foreground: 0 0% 14.5%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 84% 60%;
+  --border: 0 0% 15%;
+  --input: 0 0% 12%;
+  --ring: 10 100% 50%;
+  --radius: 0.5rem;
+
+  /* Added cinema-specific seat state colors */
+  --seat-available: 0 0% 100%;
+  --seat-selected: 142 100% 50%;
+  --seat-locked: 80 100% 60%;
+  --seat-sold: 10 100% 50%;
+  --seat-pending: 0 0% 50%;
+  
+  /* Success, warning, error */
+  --success: 142 100% 50%;
+  --warning: 80 100% 60%;
+  --error: 10 100% 50%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Added cinema-specific animations */
+  @keyframes pulse-seat {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse-seat {
+    animation: pulse-seat 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}

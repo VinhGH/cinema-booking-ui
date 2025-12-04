@@ -1,0 +1,39 @@
+[00:00:03.413] Server  LOG      ✓ Ready in 2.2s
+[00:00:09.614] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  <Root callbacks={[...]}>
+    <Head>
+    <AppContainer>
+      <Container fn={function fn}>
+        <PagesDevOverlayBridge>
+          <PagesDevOverlayErrorBoundary>
+            <PathnameContextProviderAdapter router={{sdc:{},sbc:{}, ...}} isAutoExport={false}>
+              <App pageProps={{statusCode:404, ...}} Component={function ErrorPage} err={undefined} ...>
+                <ErrorPage statusCode={404} hostname="localhost">
+                  <div
+                    style={{fontFamily:"system-ui,...",height:"100vh",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"...", ...}}
+-                   bis_skin_checked="1"
+                  >
+                    <Head>
+                    <div
+                      style={{lineHeight:"48px"}}
+-                     bis_skin_checked="1"
+                    >
+                      <style>
+                      <h1>
+                      <div
+                        style={{display:"inline-block"}}
+-                       bis_skin_checked="1"
+                      >
+              ...
+
