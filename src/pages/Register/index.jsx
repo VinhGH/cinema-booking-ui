@@ -1,15 +1,16 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff } from "lucide-react"
-import { useAuth } from "../../context/AuthContext"
-import translations from "../../utils/translations"
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
+import Header from '../../layouts/header'
+import { useAuth } from '../../context/AuthContext'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    fullName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: ''
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -17,12 +18,11 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
-  const t = translations.register
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     })
   }
 
@@ -31,161 +31,168 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
 
-    const { email, password, confirmPassword, fullName } = formData
-
-    if (!email || !password || !confirmPassword || !fullName) {
-      setError("Vui lòng điền đầy đủ thông tin")
+    // Validate Gmail only
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(formData.email)) {
+      setError('Email phải có định dạng @gmail.com')
       setLoading(false)
       return
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError(translations.validation.invalidEmail)
+    if (formData.password.length < 6) {
+      setError('Mật khẩu phải có ít nhất 6 ký tự')
       setLoading(false)
       return
     }
 
-    if (password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự")
+    if (formData.password !== formData.confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp')
       setLoading(false)
       return
     }
 
-    if (password !== confirmPassword) {
-      setError(t.passwordMismatch)
-      setLoading(false)
-      return
-    }
-
-    const result = register(formData)
+    const result = await register(formData)
     setLoading(false)
 
     if (result.success) {
-      navigate('/')
+      // Chuyển sang trang đăng nhập thay vì tự động login
+      navigate('/login', {
+        state: {
+          message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.'
+        }
+      })
     } else {
-      setError(result.error)
+      setError(result.error || 'Đăng ký thất bại')
     }
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center px-8 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-primary mb-2">CineBook</h1>
-          <p className="text-secondary">{t.subtitle}</p>
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center px-8 pt-24 pb-12 relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-lg shadow-black/20">
-          <h2 className="text-2xl font-bold mb-6">{t.title}</h2>
+        <div className="w-full max-w-md relative z-10">
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold text-primary mb-2">CineBook</h1>
+            <p className="text-gray-400">Tạo tài khoản mới</p>
+          </div>
 
-          {error && (
-            <div className="bg-error/10 border border-error text-error px-4 py-3 rounded-lg mb-4">
-              {error}
-            </div>
-          )}
+          <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">
+            <h2 className="text-2xl font-bold text-white mb-6">Đăng Ký</h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium mb-2">
-                {t.fullName}
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Nguyễn Văn A"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
-                {t.email}
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="email@example.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2">
-                {t.password}
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 pr-12 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-xl mb-4">
+                {error}
               </div>
-            </div>
+            )}
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-                {t.confirmPassword}
-              </label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-white font-medium mb-2">Họ và Tên</label>
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 pr-12 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="••••••••"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                  placeholder="Nguyễn Văn A"
+                  required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-red-600 text-background font-bold py-3 rounded-lg transition disabled:opacity-50"
-            >
-              {loading ? translations.common.loading : t.registerButton}
-            </button>
-          </form>
+              <div>
+                <label className="block text-white font-medium mb-2">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                  placeholder="email@gmail.com"
+                  required
+                />
+              </div>
 
-          <p className="text-center text-secondary mt-6">
-            {t.haveAccount}{" "}
-            <Link to="/login" className="text-primary hover:text-red-600">
-              {t.signIn}
-            </Link>
-          </p>
+              <div>
+                <label className="block text-white font-medium mb-2">Số Điện Thoại (Tùy chọn)</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                  placeholder="0339464751"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">Mật Khẩu</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                    placeholder="••••••••"
+                    minLength={6}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">Xác Nhận Mật Khẩu</label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pr-12 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                    placeholder="••••••••"
+                    minLength={6}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50"
+              >
+                {loading ? 'Đang đăng ký...' : 'Đăng Ký'}
+              </button>
+
+              <p className="text-center text-gray-300">
+                Đã có tài khoản?{' '}
+                <Link to="/login" className="text-primary hover:text-red-600 font-medium transition-colors">
+                  Đăng nhập ngay
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
-    </main>
+    </>
   )
 }

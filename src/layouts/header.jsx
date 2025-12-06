@@ -5,13 +5,14 @@ import { useAuth } from "../context/AuthContext"
 import translations from "../utils/translations"
 
 export default function Header() {
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const { user, logout, isAdmin } = useAuth()
   const t = translations.nav
-
+  console.log(user)
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import PublicRoute from './components/auth/PublicRoute'
 import Home from './pages/Home'
 import NowShowing from './pages/NowShowing'
 import ComingSoon from './pages/ComingSoon'
@@ -29,13 +30,25 @@ function App() {
                     <Route path="/promotions" element={<Promotions />} />
                     <Route path="/support" element={<Support />} />
                     <Route path="/contact" element={<Contact />} />
-                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile" element={
+                        <ProtectedRoute><Profile /></ProtectedRoute>
+                    } />
                     <Route path="/movie/:id" element={<MovieDetail />} />
-                    <Route path="/booking/:id" element={<Booking />} />
-                    <Route path="/payment" element={<Payment />} />
-                    <Route path="/tickets" element={<MyTickets />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                    <Route path="/booking/:id" element={
+                        <ProtectedRoute><Booking /></ProtectedRoute>
+                    } />
+                    <Route path="/payment" element={
+                        <ProtectedRoute><Payment /></ProtectedRoute>
+                    } />
+                    <Route path="/tickets" element={
+                        <ProtectedRoute><MyTickets /></ProtectedRoute>
+                    } />
+                    <Route path="/login" element={
+                        <PublicRoute><Login /></PublicRoute>
+                    } />
+                    <Route path="/register" element={
+                        <PublicRoute><Register /></PublicRoute>
+                    } />
                     <Route
                         path="/admin/*"
                         element={

@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-export default function ProtectedRoute({ children, requireAdmin = false }) {
-    const { user, loading, isInitialized, isAdmin } = useAuth()
+export default function PublicRoute({ children }) {
+    const { user, loading, isInitialized } = useAuth()
 
     // Wait for auth to initialize
     if (!isInitialized || loading) {
@@ -16,13 +16,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
         )
     }
 
-    if (!user) {
-        return <Navigate to="/login" replace />
-    }
-
-    if (requireAdmin && !isAdmin()) {
+    // Already logged in - redirect to home
+    if (user) {
         return <Navigate to="/" replace />
     }
 
+    // Not logged in - show login/register page
     return children
 }
