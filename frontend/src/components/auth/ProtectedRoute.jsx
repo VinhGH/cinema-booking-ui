@@ -20,7 +20,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
         return <Navigate to="/login" replace />
     }
 
-    if (requireAdmin && !isAdmin()) {
+    if (requireAdmin && !isAdmin) {
         return <Navigate to="/" replace />
     }
 
