@@ -1,53 +1,111 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { ArrowLeft, CheckCircle, XCircle, AlertTriangle } from "lucide-react"
 import Header from "../../layouts/header"
 import PaymentForm from "../../components/common/payment-form"
 import OrderSummary from "../../components/common/OrderSummary"
+import { bookingsApi } from "../../services/api"
 
 export default function PaymentPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState(null) // null, 'success', 'error'
   const [error, setError] = useState(null)
+  const [bookingId, setBookingId] = useState(null)
 
-  // Mock thông tin đặt vé (trong thực tế lấy từ context/state)
-  const bookingData = {
-    movie: "Dune: Phần Hai",
-    showtime: "04/12/2024 - 20:00",
-    hall: "Phòng chiếu 1",
-    seats: ["A5", "A6"],
-    ticketCount: 2,
-    subtotal: 300000,
-    serviceFee: 10000,
-    total: 310000,
+  // Get booking data from navigation state
+  const bookingData = location.state?.bookingData
+
+  console.log('💳 [Payment] Page loaded')
+  console.log('💳 [Payment] Booking data from navigation:', bookingData)
+
+  // Redirect if no booking data
+  if (!bookingData) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen bg-[#0D0D0D] py-8">
+          <div className="max-w-7xl mx-auto px-8">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center">
+                <p className="text-secondary text-xl mb-4">Không tìm thấy thông tin đặt vé</p>
+                <Link to="/" className="text-primary hover:underline">
+                  ← Về trang chủ
+                </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+      </>
+    )
   }
 
   const handlePayment = async (formData) => {
+    console.log('💳 [Payment] Payment initiated')
+    console.log('💳 [Payment] Form data:', formData)
+
     setIsProcessing(true)
     setError(null)
 
     try {
-      // Giả lập thời gian xử lý thanh toán
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Giả lập lỗi thanh toán ngẫu nhiên (20% thất bại)
-      if (Math.random() > 0.8) {
-        throw new Error("Thanh toán bị từ chối. Vui lòng kiểm tra lại thông tin thẻ và thử lại.")
+      const bookingPayload = {
+        showtime_id: bookingData.showtime.id,
+        seats: bookingData.seats.ids,
+        concessions: [], // Can add concessions later
+        points_used: 0, // Can add points later
+        payment_method: formData.paymentMethod,
       }
 
-      // Thành công
+      console.log('📦 [Payment] Booking payload:', JSON.stringify(bookingPayload, null, 2))
+      console.log('📦 [Payment] Seats array:', bookingPayload.seats)
+      console.log('📦 [Payment] Seats count:', bookingPayload.seats.length)
+
+      // Create booking
+      console.log('🔄 [Payment] Calling bookings API...')
+      const booking = await bookingsApi.create(bookingPayload)
+      console.log('✅ [Payment] Booking created successfully:', booking)
+
+      // Success
+      setBookingId(booking.id)
       setPaymentStatus('success')
 
-      // Chuyển đến trang vé sau 3 giây
+      // Navigate to home page after 3 seconds
+      console.log('🎫 [Payment] Redirecting to home page in 3 seconds...')
       setTimeout(() => {
-        window.location.href = "/tickets"
+        navigate('/', {
+          state: {
+            bookingSuccess: true,
+            bookingId: booking.id,
+            bookingCode: booking.booking_code,
+            message: 'Đặt vé thành công!'
+          }
+        })
       }, 3000)
     } catch (err) {
-      setError(err.message)
+      console.error('❌ [Payment] Booking creation error:', err)
+      console.error('❌ [Payment] Error message:', err.message)
+      console.error('❌ [Payment] Error stack:', err.stack)
+      setError(err.message || 'Đã xảy ra lỗi khi tạo booking. Vui lòng thử lại.')
       setPaymentStatus('error')
       setIsProcessing(false)
     }
   }
+
+  // Format booking data for OrderSummary component
+  const orderSummaryData = {
+    movie: bookingData.movie.title,
+    showtime: bookingData.showtime.date,
+    hall: bookingData.showtime.hall,
+    cinema: bookingData.showtime.cinema,
+    seats: bookingData.seats.labels,
+    ticketCount: bookingData.seats.count,
+    subtotal: bookingData.pricing.subtotal,
+    serviceFee: bookingData.pricing.serviceFee,
+    total: bookingData.pricing.total,
+  }
+
+  console.log('📋 [Payment] Order summary data:', orderSummaryData)
 
   return (
     <>
@@ -57,7 +115,7 @@ export default function PaymentPage() {
 
           {/* Nút quay lại */}
           <Link
-            to="/booking/1"
+            to={-1}
             className="inline-flex items-center gap-2 text-[#B3B3B3] hover:text-white transition-colors duration-200 mb-6"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -89,7 +147,7 @@ export default function PaymentPage() {
                       <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
                         <p className="text-red-400 text-sm flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4" />
-                          Ghế bạn chọn đã được trả lại. Hãy chọn lại ghế để tiếp tục đặt vé.
+                          Vui lòng kiểm tra lại thông tin và thử lại.
                         </p>
                       </div>
 
@@ -104,11 +162,12 @@ export default function PaymentPage() {
                           Thử lại
                         </button>
 
-                        <Link to="/booking/1">
-                          <button className="bg-[#2A2A2A] hover:bg-[#333333] text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-200 border border-[#404040]">
-                            Chọn ghế lại
-                          </button>
-                        </Link>
+                        <button
+                          onClick={() => navigate(-1)}
+                          className="bg-[#2A2A2A] hover:bg-[#333333] text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-200 border border-[#404040]"
+                        >
+                          Chọn ghế lại
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -126,6 +185,11 @@ export default function PaymentPage() {
                     <p className="text-green-400 mb-4">
                       Đơn vé của bạn đã được xác nhận. Thông tin vé đã được gửi qua email.
                     </p>
+                    {bookingId && (
+                      <p className="text-[#B3B3B3] text-sm mb-2">
+                        Mã đặt vé: <span className="text-white font-mono">{bookingId}</span>
+                      </p>
+                    )}
                     <p className="text-[#B3B3B3] text-sm">Đang chuyển đến trang vé...</p>
                   </div>
                 </div>
@@ -136,14 +200,14 @@ export default function PaymentPage() {
                 <PaymentForm
                   onSubmit={handlePayment}
                   isProcessing={isProcessing}
-                  bookingData={bookingData}
+                  bookingData={orderSummaryData}
                 />
               )}
             </div>
 
             {/* Chi tiết hóa đơn */}
             <div className="lg:col-span-1">
-              <OrderSummary bookingData={bookingData} />
+              <OrderSummary bookingData={orderSummaryData} />
             </div>
           </div>
 

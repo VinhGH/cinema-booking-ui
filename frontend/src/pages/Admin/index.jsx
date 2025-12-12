@@ -1,6 +1,6 @@
 
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Header from "../../layouts/header"
 import AdminNav from "../../layouts/admin-nav"
 import AdminDashboard from "./Dashboard"
@@ -9,8 +9,20 @@ import AdminMovies from "./Movies"
 import AdminShowtimes from "./Showtimes"
 import AdminReports from "./Reports"
 
+const ADMIN_TAB_KEY = 'admin_active_tab'
+
 export default function AdminPage() {
-  const [activeSection, setActiveSection] = useState("dashboard")
+  // Load active section from localStorage, default to "dashboard"
+  const [activeSection, setActiveSection] = useState(() => {
+    const saved = localStorage.getItem(ADMIN_TAB_KEY)
+    return saved || "dashboard"
+  })
+
+  // Save active section to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(ADMIN_TAB_KEY, activeSection)
+    console.log('💾 [Admin] Active tab saved:', activeSection)
+  }, [activeSection])
 
   // In a real app, verify user role here
   const isAdmin = true

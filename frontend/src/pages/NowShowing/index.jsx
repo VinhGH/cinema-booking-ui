@@ -1,14 +1,33 @@
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import Header from "../../layouts/header"
 import Footer from "../../layouts/footer"
 import MovieCard from "../../components/cards/movie-card"
 import translations from "../../utils/translations"
-import { getNowShowingMovies } from "../../data/movies"
-
-const NOW_SHOWING_MOVIES = getNowShowingMovies()
+import { moviesApi } from "../../services/api"
 
 export default function NowShowingPage() {
     const t = translations.home
+    const [movies, setMovies] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    useEffect(() => {
+        const fetchMovies = async () => {
+            try {
+                setLoading(true)
+                const data = await moviesApi.getNowShowing()
+                setMovies(data)
+            } catch (err) {
+                console.error('Error fetching now showing movies:', err)
+                setError(err.message)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchMovies()
+    }, [])
 
     return (
         <>
@@ -23,7 +42,7 @@ export default function NowShowingPage() {
                         </p>
                         <div className="flex items-center gap-2 text-sm text-gray-400">
                             <span className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full text-primary font-medium">
-                                {NOW_SHOWING_MOVIES.length} phim
+                                {loading ? '...' : `${movies.length} phim`}
                             </span>
                         </div>
                     </div>
@@ -54,13 +73,28 @@ export default function NowShowingPage() {
 
                 {/* Movies Grid */}
                 <section className="max-w-6xl mx-auto px-8 py-12">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {NOW_SHOWING_MOVIES.map((movie) => (
-                            <Link key={movie.id} to={`/movie/${movie.id}`}>
-                                <MovieCard movie={movie} />
-                            </Link>
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="text-center py-12">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                            <p className="mt-4 text-secondary">Loading movies...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12">
+                            <p className="text-red-500">Error: {error}</p>
+                        </div>
+                    ) : movies.length === 0 ? (
+                        <div className="text-center py-12">
+                            <p className="text-secondary">No movies currently showing</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {movies.map((movie) => (
+                                <Link key={movie.id} to={`/movie/${movie.id}`}>
+                                    <MovieCard movie={movie} />
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 {/* Pagination */}

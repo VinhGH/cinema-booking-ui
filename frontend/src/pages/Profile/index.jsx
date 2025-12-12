@@ -1,42 +1,90 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Header from "../../layouts/header"
 import Footer from "../../layouts/footer"
 import { useAuth } from "../../context/AuthContext"
 import { User, Phone, Mail, QrCode, Star, Ticket, Lock, Edit, History, FileText, Award } from "lucide-react"
+import { bookingsApi, usersApi } from "../../services/api"
+import UpdateProfileModal from "../../components/modals/UpdateProfileModal"
 
 export default function ProfilePage() {
-    const { user, logout } = useAuth()
+    const { user, logout, refreshUser } = useAuth()
     const navigate = useNavigate()
-    const [activeTab, setActiveTab] = useState("cinema")
+    const [bookings, setBookings] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
 
     if (!user) {
         navigate("/login")
         return null
     }
 
-    // Mock data
+    // Fetch user's bookings for transaction history
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                console.log('📊 [Profile] Fetching transaction history...')
+
+                // Refresh user data to get latest points
+                if (refreshUser) {
+                    console.log('🔄 [Profile] Refreshing user data...')
+                    await refreshUser()
+                }
+
+                const data = await bookingsApi.getMyBookings()
+                console.log('✅ [Profile] Bookings loaded:', data.length)
+                setBookings(data)
+            } catch (err) {
+                console.error('❌ [Profile] Error fetching bookings:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
+    }, [])
+
+    const handleUpdateProfile = async (formData) => {
+        try {
+            console.log('🔄 [Profile] Updating profile...', formData)
+            await usersApi.updateProfile(formData)
+            console.log('✅ [Profile] Profile updated successfully')
+
+            // Refresh user data to show updated info
+            if (refreshUser) {
+                await refreshUser()
+            }
+
+            alert('Cập nhật thông tin thành công!')
+        } catch (err) {
+            console.error('❌ [Profile] Update failed:', err)
+            throw new Error(err.response?.data?.message || 'Cập nhật thất bại')
+        }
+    }
+
+    // User info with real data
     const userInfo = {
-        name: user.name || "Nguyễn Văn A",
-        phone: "0339464751",
+        name: user.name || user.full_name || "Nguyễn Văn A",
+        phone: user.phone || "0339464751",
         email: user.email || "thaivinhsonchip@gmail.com",
-        loyaltyPoints: 0,
-        rewardPoints: 0,
+        loyaltyPoints: user.loyalty_points || 0,
+        rewardPoints: user.reward_points || 0,
         qrCode: "QR_CODE_DATA_HERE"
     }
 
-    const transactionHistory = []
-
-    const tabs = [
-        { id: "cinema", label: "Rạp" },
-        { id: "movie", label: "Tên phim" },
-        { id: "total", label: "Tổng tiền" },
-        { id: "points", label: "Điểm thưởng" }
-    ]
+    // Transform bookings to transaction history
+    const transactionHistory = bookings.map(booking => ({
+        movieTitle: booking.showtimes?.movies?.title || 'N/A',
+        cinema: booking.showtimes?.halls?.cinemas?.name || 'CineBook TP.HCM',
+        date: new Date(booking.showtimes?.show_date).toLocaleDateString('vi-VN'),
+        time: booking.showtimes?.show_time || '',
+        seats: booking.booking_seats?.map(bs => `${bs.seats?.row_label}${bs.seats?.seat_number}`).join(', ') || 'N/A',
+        total: booking.final_amount || 0,
+        points: booking.points_earned || 0
+    }))
 
     const menuItems = [
         { icon: Lock, label: "Đổi mật khẩu", action: () => alert("Chức năng đổi mật khẩu") },
-        { icon: Edit, label: "Cập nhật thông tin", action: () => alert("Chức năng cập nhật thông tin") },
+        { icon: Edit, label: "Cập nhật thông tin", action: () => setIsUpdateModalOpen(true) },
         { icon: History, label: "Lịch sử giao dịch online", action: () => navigate("/tickets") },
         { icon: FileText, label: "Chính sách thanh toán", action: () => alert("Chính sách thanh toán") },
         { icon: Award, label: "Chính sách thành viên", action: () => alert("Chính sách thành viên") }
@@ -112,22 +160,6 @@ export default function ProfilePage() {
                             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8">
                                 <h2 className="text-2xl font-bold text-white mb-6">Lịch Sử Giao Dịch</h2>
 
-                                {/* Tabs */}
-                                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                                    {tabs.map((tab) => (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className={`flex-shrink-0 px-6 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
-                                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                                                }`}
-                                        >
-                                            {tab.label}
-                                        </button>
-                                    ))}
-                                </div>
-
                                 {/* Transaction List */}
                                 <div className="min-h-[400px]">
                                     {transactionHistory.length === 0 ? (
@@ -195,6 +227,15 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </main>
+
+            {/* Update Profile Modal */}
+            <UpdateProfileModal
+                isOpen={isUpdateModalOpen}
+                onClose={() => setIsUpdateModalOpen(false)}
+                currentUser={user}
+                onSuccess={handleUpdateProfile}
+            />
+
             <Footer />
         </>
     )

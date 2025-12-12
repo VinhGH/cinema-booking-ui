@@ -137,6 +137,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    if (session?.user) {
+      await loadUserProfile(session.user);
+    }
+  };
+
   const value = {
     user,
     session,
@@ -144,6 +150,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    refreshUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === "admin",
     isInitialized,

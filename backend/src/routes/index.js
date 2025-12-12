@@ -3,10 +3,12 @@ const express = require('express');
 const router = express.Router();
 
 // Import route modules
+const movieRoutes = require('./movie.routes');
+const showtimeRoutes = require('./showtime.routes');
+const userRoutes = require('./user.routes');
+const bookingRoutes = require('./booking.routes');
+const analyticsRoutes = require('./analytics.routes');
 // const authRoutes = require('./auth.routes');
-// const movieRoutes = require('./movie.routes');
-// const bookingRoutes = require('./booking.routes');
-// const userRoutes = require('./user.routes');
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -20,15 +22,18 @@ router.get('/', (req, res) => {
             showtimes: '/showtimes',
             bookings: '/bookings',
             users: '/users',
+            analytics: '/analytics',
             admin: '/admin'
         }
     });
 });
 
 // Mount routes
+router.use('/movies', movieRoutes);
+router.use('/showtimes', showtimeRoutes);
+router.use('/users', userRoutes);
+router.use('/bookings', bookingRoutes);
+router.use('/analytics', analyticsRoutes);
 // router.use('/auth', authRoutes);
-// router.use('/movies', movieRoutes);
-// router.use('/bookings', bookingRoutes);
-// router.use('/users', userRoutes);
 
 module.exports = router;

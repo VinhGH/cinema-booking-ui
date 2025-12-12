@@ -6,10 +6,11 @@ export default function ShowtimeSelector({ showtimes = [], onSelect, selectedSho
 
     // Group showtimes by date
     const showtimesByDate = showtimes.reduce((acc, showtime) => {
-        if (!acc[showtime.date]) {
-            acc[showtime.date] = []
+        const date = showtime.show_date // Use show_date from API
+        if (!acc[date]) {
+            acc[date] = []
         }
-        acc[showtime.date].push(showtime)
+        acc[date].push(showtime)
         return acc
     }, {})
 
@@ -99,7 +100,7 @@ export default function ShowtimeSelector({ showtimes = [], onSelect, selectedSho
                                     <div className="flex items-center justify-between mb-3">
                                         <span className={`text-2xl font-bold ${isSoldOut ? 'text-[#808080]' : 'text-white'
                                             }`}>
-                                            {showtime.time}
+                                            {showtime.show_time}
                                         </span>
                                         {isSelected && !isSoldOut && (
                                             <div className="w-6 h-6 bg-[#E50914] rounded-full flex items-center justify-center">
@@ -114,12 +115,12 @@ export default function ShowtimeSelector({ showtimes = [], onSelect, selectedSho
                                     <div className="space-y-2 text-sm">
                                         <div className="flex items-center gap-2 text-[#B3B3B3]">
                                             <MapPin className="w-4 h-4" />
-                                            <span>{showtime.hall}</span>
+                                            <span>{showtime.halls?.name || 'N/A'}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-[#B3B3B3]">
                                             <Users className="w-4 h-4" />
                                             <span className={isLowSeats && !isSoldOut ? 'text-yellow-500 font-semibold' : ''}>
-                                                {isSoldOut ? 'Hết Vé' : `${showtime.availableSeats} ghế còn lại`}
+                                                {isSoldOut ? 'Hết Vé' : `${showtime.availableSeats || 100} ghế còn lại`}
                                             </span>
                                         </div>
                                         <div className="text-[#E50914] font-bold text-base mt-2">

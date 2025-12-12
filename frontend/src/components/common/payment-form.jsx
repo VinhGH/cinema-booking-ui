@@ -88,8 +88,10 @@ export default function PaymentForm({ onSubmit, isProcessing, bookingData }) {
 
   const paymentMethods = [
     { id: "credit-card", name: "Credit/Debit Card", icon: CreditCard },
+    { id: "vnpay", name: "VNPay", icon: "🏦" },
     { id: "momo", name: "MoMo Wallet", icon: "💳" },
     { id: "zalopay", name: "ZaloPay", icon: "💰" },
+    { id: "cash", name: "Tiền Mặt", icon: "💵" },
   ]
 
   return (
@@ -104,8 +106,8 @@ export default function PaymentForm({ onSubmit, isProcessing, bookingData }) {
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, paymentMethod: method.id }))}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${formData.paymentMethod === method.id
-                  ? 'border-[#E50914] bg-[#E50914]/10'
-                  : 'border-[#404040] bg-[#2A2A2A] hover:border-[#808080]'
+                ? 'border-[#E50914] bg-[#E50914]/10'
+                : 'border-[#404040] bg-[#2A2A2A] hover:border-[#808080]'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -229,8 +231,8 @@ export default function PaymentForm({ onSubmit, isProcessing, bookingData }) {
         type="submit"
         disabled={isProcessing}
         className={`w-full font-bold py-4 rounded-lg transition-all duration-200 text-lg ${isProcessing
-            ? "bg-[#2A2A2A] text-[#808080] cursor-not-allowed"
-            : "bg-[#E50914] hover:bg-[#B20710] text-white shadow-lg shadow-[#E50914]/30"
+          ? "bg-[#2A2A2A] text-[#808080] cursor-not-allowed"
+          : "bg-[#E50914] hover:bg-[#B20710] text-white shadow-lg shadow-[#E50914]/30"
           }`}
       >
         {isProcessing ? (

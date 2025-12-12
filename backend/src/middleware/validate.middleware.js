@@ -8,6 +8,8 @@ const { ValidationError } = require('../utils/error');
  */
 exports.validate = (schema, property = 'body') => {
     return (req, res, next) => {
+        console.log(`🔍 [Validation] Validating ${property}:`, JSON.stringify(req[property], null, 2));
+
         const { error, value } = schema.validate(req[property], {
             abortEarly: false,
             stripUnknown: true
@@ -19,8 +21,14 @@ exports.validate = (schema, property = 'body') => {
                 message: detail.message
             }));
 
+            console.error('❌ [Validation] Validation failed:');
+            console.error('❌ [Validation] Errors:', JSON.stringify(errors, null, 2));
+            console.error('❌ [Validation] Received data:', JSON.stringify(req[property], null, 2));
+
             return next(new ValidationError('Validation failed', errors));
         }
+
+        console.log('✅ [Validation] Validation passed');
 
         // Replace request property with validated value
         req[property] = value;
