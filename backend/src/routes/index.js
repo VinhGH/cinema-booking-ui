@@ -9,6 +9,7 @@ const userRoutes = require('./user.routes');
 const bookingRoutes = require('./booking.routes');
 const analyticsRoutes = require('./analytics.routes');
 const authRoutes = require('./auth.routes');
+const registrationRoutes = require('./registration.routes');
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -18,6 +19,7 @@ router.get('/', (req, res) => {
         version: process.env.API_VERSION || 'v1',
         endpoints: {
             auth: '/auth',
+            register: '/auth/register',
             movies: '/movies',
             showtimes: '/showtimes',
             bookings: '/bookings',
@@ -30,6 +32,7 @@ router.get('/', (req, res) => {
 
 // Mount routes
 router.use('/auth', authRoutes);
+router.use('/auth/register', registrationRoutes);
 router.use('/movies', movieRoutes);
 router.use('/showtimes', showtimeRoutes);
 router.use('/users', userRoutes);

@@ -39,6 +39,24 @@ const otpValidators = {
             'string.min': 'Mật khẩu mới phải có ít nhất 6 ký tự',
             'any.required': 'Mật khẩu mới là bắt buộc'
         })
+    }),
+
+    // Registration OTP validators
+    requestRegistrationOTP: Joi.object({
+        email: Joi.string().email().required()
+    }),
+
+    verifyRegistrationOTP: Joi.object({
+        email: Joi.string().email().required(),
+        otp_code: Joi.string().length(6).pattern(/^\d+$/).required()
+    }),
+
+    completeRegistration: Joi.object({
+        email: Joi.string().email().required(),
+        otp_code: Joi.string().length(6).pattern(/^\d+$/).required(),
+        full_name: Joi.string().min(2).max(100).required(),
+        phone: Joi.string().pattern(/^[0-9]{10,11}$/).required(),
+        password: Joi.string().min(6).required()
     })
 };
 

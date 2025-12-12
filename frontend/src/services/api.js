@@ -525,3 +525,39 @@ export const authApi = {
         return response.data
     }
 }
+
+// =====================================================
+// REGISTRATION API (OTP Verification)
+// =====================================================
+
+export const registrationApi = {
+    // Request OTP for registration
+    async requestOTP(email) {
+        console.log('📧 [API] Requesting registration OTP...')
+        const response = await axiosInstance.post('/auth/register/request-otp', { email })
+        console.log('✅ [API] Registration OTP sent')
+        return response.data
+    },
+
+    // Verify registration OTP
+    async verifyOTP(email, otp_code) {
+        console.log('🔍 [API] Verifying registration OTP...')
+        const response = await axiosInstance.post('/auth/register/verify-otp', { email, otp_code })
+        console.log('✅ [API] Registration OTP verified')
+        return response.data
+    },
+
+    // Complete registration
+    async completeRegistration(email, otp_code, full_name, phone, password) {
+        console.log('✍️ [API] Completing registration...')
+        const response = await axiosInstance.post('/auth/register/complete', {
+            email,
+            otp_code,
+            full_name,
+            phone,
+            password
+        })
+        console.log('✅ [API] Registration completed')
+        return response.data
+    }
+}
