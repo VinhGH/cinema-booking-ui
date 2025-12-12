@@ -28,4 +28,15 @@ module.exports = {
     // Booking
     SEAT_HOLD_DURATION_MINUTES: parseInt(process.env.SEAT_HOLD_DURATION_MINUTES) || 10,
     BOOKING_EXPIRY_HOURS: parseInt(process.env.BOOKING_EXPIRY_HOURS) || 24,
+
+    // Email / SMTP
+    SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+    SMTP_PORT: parseInt(process.env.SMTP_PORT) || 465,
+    SMTP_SECURE: process.env.SMTP_SECURE !== 'false',
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    EMAIL_FROM: process.env.EMAIL_FROM || process.env.SMTP_USER,
+
+    // OTP
+    OTP_EXPIRE_MINUTES: parseInt(process.env.OTP_EXPIRE_MINUTES) || 5,
 };

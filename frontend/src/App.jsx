@@ -16,6 +16,7 @@ import Payment from './pages/Payment'
 import MyTickets from './pages/MyTickets'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
 import Admin from './pages/Admin'
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
                     <Route path="/register" element={
                         <PublicRoute><Register /></PublicRoute>
                     } />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route
                         path="/admin/*"
                         element={

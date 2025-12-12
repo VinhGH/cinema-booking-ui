@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext"
 import { User, Phone, Mail, QrCode, Star, Ticket, Lock, Edit, History, FileText, Award } from "lucide-react"
 import { bookingsApi, usersApi } from "../../services/api"
 import UpdateProfileModal from "../../components/modals/UpdateProfileModal"
+import ChangePasswordModal from "../../components/modals/ChangePasswordModal"
 
 export default function ProfilePage() {
     const { user, logout, refreshUser } = useAuth()
@@ -13,6 +14,7 @@ export default function ProfilePage() {
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+    const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false)
 
     if (!user) {
         navigate("/login")
@@ -83,7 +85,7 @@ export default function ProfilePage() {
     }))
 
     const menuItems = [
-        { icon: Lock, label: "Đổi mật khẩu", action: () => alert("Chức năng đổi mật khẩu") },
+        { icon: Lock, label: "Đổi mật khẩu", action: () => setIsChangePasswordModalOpen(true) },
         { icon: Edit, label: "Cập nhật thông tin", action: () => setIsUpdateModalOpen(true) },
         { icon: History, label: "Lịch sử giao dịch online", action: () => navigate("/tickets") },
         { icon: FileText, label: "Chính sách thanh toán", action: () => alert("Chính sách thanh toán") },
@@ -234,6 +236,12 @@ export default function ProfilePage() {
                 onClose={() => setIsUpdateModalOpen(false)}
                 currentUser={user}
                 onSuccess={handleUpdateProfile}
+            />
+
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                isOpen={isChangePasswordModalOpen}
+                onClose={() => setIsChangePasswordModalOpen(false)}
             />
 
             <Footer />

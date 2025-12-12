@@ -213,6 +213,17 @@ export const usersApi = {
     async getMyBookings(filters = {}) {
         const response = await axiosInstance.get('/users/bookings', { params: filters });
         return response.data;
+    },
+
+    // Change password (authenticated)
+    async changePassword(current_password, new_password) {
+        console.log('🔑 [API] Changing password...')
+        const response = await axiosInstance.post('/users/change-password', {
+            current_password,
+            new_password
+        });
+        console.log('✅ [API] Password changed')
+        return response.data;
     }
 }
 
@@ -478,5 +489,39 @@ export const cinemasApi = {
 
         if (error) throw error
         return data
+    }
+}
+
+// =====================================================
+// AUTH API (Password Reset)
+// =====================================================
+
+export const authApi = {
+    // Forgot Password - Request OTP
+    async requestPasswordReset(email) {
+        console.log('📧 [API] Requesting password reset OTP...')
+        const response = await axiosInstance.post('/auth/forgot-password', { email })
+        console.log('✅ [API] OTP sent')
+        return response.data
+    },
+
+    // Verify Reset OTP
+    async verifyResetOTP(email, otp_code) {
+        console.log('🔍 [API] Verifying OTP...')
+        const response = await axiosInstance.post('/auth/verify-reset-otp', { email, otp_code })
+        console.log('✅ [API] OTP verified')
+        return response.data
+    },
+
+    // Reset Password
+    async resetPassword(email, otp_code, new_password) {
+        console.log('🔑 [API] Resetting password...')
+        const response = await axiosInstance.post('/auth/reset-password', {
+            email,
+            otp_code,
+            new_password
+        })
+        console.log('✅ [API] Password reset successful')
+        return response.data
     }
 }

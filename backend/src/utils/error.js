@@ -59,11 +59,31 @@ class ConflictError extends AppError {
     }
 }
 
+/**
+ * Bad Request Error
+ */
+class BadRequestError extends AppError {
+    constructor(message = 'Bad request') {
+        super(message, 400);
+    }
+}
+
+/**
+ * Unauthorized Error
+ */
+class UnauthorizedError extends AppError {
+    constructor(message = 'Unauthorized') {
+        super(message, 401);
+    }
+}
+
 module.exports = {
     AppError,
     ValidationError,
     AuthenticationError,
     AuthorizationError,
     NotFoundError,
-    ConflictError
+    ConflictError,
+    BadRequestError,
+    UnauthorizedError
 };

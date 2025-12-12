@@ -1,8 +1,8 @@
-// backend/src/routes/user.routes.js
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user.controller');
 const userValidator = require('../validators/user.validator');
+const otpValidator = require('../validators/otp.validator');
 const { validate } = require('../middleware/validate.middleware');
 const { authenticate, requireAdmin } = require('../middleware/auth.middleware');
 
@@ -16,6 +16,12 @@ router.put(
     '/profile',
     validate(userValidator.updateProfile, 'body'),
     userController.updateProfile
+);
+
+router.post(
+    '/change-password',
+    validate(otpValidator.changePassword, 'body'),
+    userController.changePassword
 );
 
 router.get('/bookings', userController.getMyBookings);

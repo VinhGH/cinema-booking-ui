@@ -8,7 +8,7 @@ const showtimeRoutes = require('./showtime.routes');
 const userRoutes = require('./user.routes');
 const bookingRoutes = require('./booking.routes');
 const analyticsRoutes = require('./analytics.routes');
-// const authRoutes = require('./auth.routes');
+const authRoutes = require('./auth.routes');
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -29,11 +29,11 @@ router.get('/', (req, res) => {
 });
 
 // Mount routes
+router.use('/auth', authRoutes);
 router.use('/movies', movieRoutes);
 router.use('/showtimes', showtimeRoutes);
 router.use('/users', userRoutes);
 router.use('/bookings', bookingRoutes);
 router.use('/analytics', analyticsRoutes);
-// router.use('/auth', authRoutes);
 
 module.exports = router;

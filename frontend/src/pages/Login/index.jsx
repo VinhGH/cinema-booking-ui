@@ -113,9 +113,9 @@ export default function LoginPage() {
                   <input type="checkbox" className="mr-2" />
                   <span className="text-gray-300 text-sm">Ghi Nhớ Đăng Nhập</span>
                 </label>
-                <a href="#" className="text-primary hover:text-red-600 text-sm transition-colors">
+                <Link to="/forgot-password" className="text-primary hover:text-red-600 text-sm transition-colors">
                   Quên Mật Khẩu?
-                </a>
+                </Link>
               </div>
 
               <button
