@@ -194,39 +194,63 @@ class ShowtimeService {
      */
     async getSeats(showtimeId) {
         try {
-            // 1. Get showtime info to find hall_id
-            const showtime = await this.getById(showtimeId);
-            const hallId = showtime.hall_id;
+            logger.info(`[getSeats] Fetching seats for showtime: ${showtimeId}`);
 
-            // 2. Get all seats in the hall
+            // Query 1: Get hall_id from showtime (fast, single row)
+            const { data: showtime, error: showtimeError } = await supabase
+                .from('showtimes')
+                .select('hall_id')
+                .eq('id', showtimeId)
+                .single();
+
+            if (showtimeError) {
+                logger.error('[getSeats] Showtime query error:', showtimeError);
+                throw showtimeError;
+            }
+
+            logger.info(`[getSeats] Found hall_id: ${showtime?.hall_id}`);
+
+            // Query 2: Get all seats for this hall (with index on hall_id)
             const { data: seats, error: seatsError } = await supabase
                 .from('seats')
-                .select('*')
-                .eq('hall_id', hallId)
+                .select('id, hall_id, row_label, seat_number, seat_type')
+                .eq('hall_id', showtime.hall_id)
                 .order('row_label')
                 .order('seat_number');
 
-            if (seatsError) throw seatsError;
+            if (seatsError) {
+                logger.error('[getSeats] Seats query error:', seatsError);
+                throw seatsError;
+            }
 
-            // 3. Get all booked seats for this showtime
+            logger.info(`[getSeats] Found ${seats?.length || 0} seats in hall`);
+
+            // Query 3: Get booked seats (with index on showtime_id)
             const { data: bookedSeats, error: bookedError } = await supabase
                 .from('booking_seats')
-                .select('seat_id, bookings!inner(status)')
+                .select('seat_id, bookings!inner(showtime_id, status)')
                 .eq('bookings.showtime_id', showtimeId)
                 .in('bookings.status', ['pending', 'confirmed']);
 
-            if (bookedError) throw bookedError;
+            if (bookedError) {
+                logger.error('[getSeats] Booked seats query error:', bookedError);
+                throw bookedError;
+            }
 
-            // 4. Create a set of booked seat IDs for fast lookup
-            const bookedSeatIds = new Set(bookedSeats.map(bs => bs.seat_id));
+            logger.info(`[getSeats] Found ${bookedSeats?.length || 0} booked seats`);
 
-            // 5. Map seats with status
-            return seats.map(seat => ({
+            // Fast Set lookup O(1)
+            const bookedSeatIds = new Set((bookedSeats || []).map(bs => bs.seat_id));
+
+            // Map with status
+            const result = (seats || []).map(seat => ({
                 ...seat,
                 is_booked: bookedSeatIds.has(seat.id),
-                // For testing: treat inactive seats as available if not booked
                 status: bookedSeatIds.has(seat.id) ? 'booked' : 'available'
             }));
+
+            logger.info(`[getSeats] Returning ${result.length} seats with status`);
+            return result;
 
         } catch (error) {
             logger.error('ShowtimeService.getSeats error:', error);
