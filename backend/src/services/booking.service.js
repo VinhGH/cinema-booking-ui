@@ -279,7 +279,20 @@ class BookingService {
           showtimes (
             show_date,
             show_time,
-            movies (id, title, poster_url, genre)
+            movies (id, title, poster_url, genre),
+            halls (
+              id,
+              name,
+              cinemas (name, city)
+            )
+          ),
+          booking_seats (
+            seat_id,
+            seats (
+              row_label,
+              seat_number,
+              seat_type
+            )
           )
         `, { count: 'exact' })
                 .eq('user_id', userId);
