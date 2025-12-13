@@ -14,6 +14,7 @@ import MovieDetail from './pages/MovieDetail'
 import Booking from './pages/Booking'
 import Payment from './pages/Payment'
 import MyTickets from './pages/MyTickets'
+import Wallet from './pages/Wallet'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
@@ -43,6 +44,9 @@ function App() {
                     } />
                     <Route path="/tickets" element={
                         <ProtectedRoute><MyTickets /></ProtectedRoute>
+                    } />
+                    <Route path="/wallet" element={
+                        <ProtectedRoute><Wallet /></ProtectedRoute>
                     } />
                     <Route path="/login" element={
                         <PublicRoute><Login /></PublicRoute>

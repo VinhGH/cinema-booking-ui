@@ -10,6 +10,7 @@ const bookingRoutes = require('./booking.routes');
 const analyticsRoutes = require('./analytics.routes');
 const authRoutes = require('./auth.routes');
 const registrationRoutes = require('./registration.routes');
+const walletRoutes = require('./wallet.routes');
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -24,6 +25,7 @@ router.get('/', (req, res) => {
             showtimes: '/showtimes',
             bookings: '/bookings',
             users: '/users',
+            wallet: '/wallet',
             analytics: '/analytics',
             admin: '/admin'
         }
@@ -37,6 +39,7 @@ router.use('/movies', movieRoutes);
 router.use('/showtimes', showtimeRoutes);
 router.use('/users', userRoutes);
 router.use('/bookings', bookingRoutes);
+router.use('/wallet', walletRoutes);
 router.use('/analytics', analyticsRoutes);
 
 module.exports = router;

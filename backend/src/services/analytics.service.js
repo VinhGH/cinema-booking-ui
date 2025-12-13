@@ -16,15 +16,21 @@ class AnalyticsService {
                 .in('status', ['confirmed', 'pending']);
 
             const totalRevenue = revenueData?.reduce((sum, b) => sum + (b.final_amount || 0), 0) || 0;
+            logger.info(`[Analytics] Total revenue: ${totalRevenue} from ${revenueData?.length} bookings`);
 
             // Get tickets sold (count booking_seats for confirmed bookings)
             // Note: We count 'confirmed' status because payment happens after booking creation
-            const { data: ticketsData } = await supabase
+            const { data: ticketsData, error: ticketsError } = await supabase
                 .from('booking_seats')
                 .select('id, bookings!inner(status)')
                 .in('bookings.status', ['confirmed', 'pending']);
 
+            if (ticketsError) {
+                logger.error('[Analytics] Error fetching tickets:', ticketsError);
+            }
+
             const ticketsSold = ticketsData?.length || 0;
+            logger.info(`[Analytics] Tickets sold: ${ticketsSold} seats from booking_seats`);
 
             // Get now showing movies count
             const { data: nowShowingData } = await supabase

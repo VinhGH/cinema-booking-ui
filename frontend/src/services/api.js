@@ -561,3 +561,27 @@ export const registrationApi = {
         return response.data
     }
 }
+
+// =====================================================
+// WALLET API
+// =====================================================
+export const walletApi = {
+    // Get wallet balance
+    async getWallet() {
+        console.log('💰 [API] Fetching wallet balance...')
+        const response = await axiosInstance.get('/wallet')
+        console.log('✅ [API] Wallet balance retrieved')
+        return response.data
+    },
+
+    // Get transaction history
+    async getTransactions(page = 1, limit = 20, type = null) {
+        console.log('📋 [API] Fetching wallet transactions...')
+        const params = { page, limit }
+        if (type) params.type = type
+
+        const response = await axiosInstance.get('/wallet/transactions', { params })
+        console.log('✅ [API] Transactions retrieved')
+        return response.data
+    }
+}

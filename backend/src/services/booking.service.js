@@ -408,20 +408,47 @@ class BookingService {
     }
 
     /**
-     * Cancel booking
+     * Cancel booking with refund
      */
     async cancel(bookingId, userId) {
         try {
-            // Can only cancel if status is pending
+            // Get booking with showtime details
             const booking = await this.getById(bookingId, userId);
 
-            if (booking.status !== 'pending') {
-                throw new ValidationError('Only pending bookings can be cancelled');
+            // Can only cancel if status is pending or confirmed
+            if (!['pending', 'confirmed'].includes(booking.status)) {
+                throw new ValidationError('Only pending or confirmed bookings can be cancelled');
             }
 
+            // Calculate refund amount based on time until showtime
+            const showDateTime = new Date(`${booking.showtimes.show_date}T${booking.showtimes.show_time}`);
+            const now = new Date();
+            const hoursUntilShow = (showDateTime - now) / (1000 * 60 * 60);
+
+            let refundAmount = 0;
+            let refundPercentage = 0;
+
+            if (hoursUntilShow >= 24) {
+                // 100% refund if cancelled 24+ hours before show
+                refundAmount = booking.final_amount;
+                refundPercentage = 100;
+            } else if (hoursUntilShow >= 2) {
+                // 50% refund if cancelled 2-24 hours before show
+                refundAmount = booking.final_amount * 0.5;
+                refundPercentage = 50;
+            } else {
+                // No refund if cancelled less than 2 hours before show
+                refundAmount = 0;
+                refundPercentage = 0;
+            }
+
+            // Update booking status to cancelled
             const { data, error } = await supabase
                 .from('bookings')
-                .update({ status: 'cancelled' })
+                .update({
+                    status: 'cancelled',
+                    updated_at: new Date().toISOString()
+                })
                 .eq('id', bookingId)
                 .eq('user_id', userId)
                 .select()
@@ -429,8 +456,40 @@ class BookingService {
 
             if (error) throw error;
 
-            logger.info('Booking cancelled:', { bookingId });
-            return data;
+            // Delete booking_seats to release seats
+            const { error: deleteSeatError } = await supabase
+                .from('booking_seats')
+                .delete()
+                .eq('booking_id', bookingId);
+
+            if (deleteSeatError) {
+                logger.error('Error releasing seats:', deleteSeatError);
+            }
+
+            // Process refund if amount > 0
+            if (refundAmount > 0) {
+                const walletService = require('./wallet.service');
+                await walletService.processRefund(
+                    userId,
+                    bookingId,
+                    refundAmount,
+                    `Hoàn ${refundPercentage}% tiền hủy vé ${booking.booking_code}`
+                );
+                logger.info(`[Booking] Refund processed: ${refundAmount} (${refundPercentage}%) for booking ${bookingId}`);
+            }
+
+            logger.info('Booking cancelled:', {
+                bookingId,
+                refundAmount,
+                refundPercentage,
+                hoursUntilShow: hoursUntilShow.toFixed(2)
+            });
+
+            return {
+                ...data,
+                refund_amount: refundAmount,
+                refund_percentage: refundPercentage
+            };
         } catch (error) {
             logger.error('BookingService.cancel error:', error);
             throw error;

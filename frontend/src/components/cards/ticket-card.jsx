@@ -1,9 +1,21 @@
 import { Calendar, Clock, MapPin, Armchair, QrCode, X, CheckCircle, XCircle } from "lucide-react"
 
 export default function TicketCard({ ticket, onCancel }) {
-  const isUpcoming = new Date(ticket.date) > new Date()
-  const canCancel = isUpcoming && ticket.status === "confirmed"
+  // Combine date and time for accurate comparison
+  const showDateTime = new Date(`${ticket.date}T${ticket.time}`)
+  const now = new Date()
+  const isUpcoming = showDateTime > now
+  const canCancel = isUpcoming && (ticket.status === "confirmed" || ticket.status === "pending")
   const isCancelled = ticket.status === "cancelled"
+
+  // Debug logging
+  console.log('🎫 [TicketCard] Ticket:', ticket.id)
+  console.log('  📅 Date:', ticket.date, 'Time:', ticket.time)
+  console.log('  🕐 Show DateTime:', showDateTime.toLocaleString('vi-VN'))
+  console.log('  🕐 Now:', now.toLocaleString('vi-VN'))
+  console.log('  ⏰ isUpcoming:', isUpcoming)
+  console.log('  📊 Status:', ticket.status)
+  console.log('  ✅ canCancel:', canCancel)
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -146,14 +158,27 @@ export default function TicketCard({ ticket, onCancel }) {
           {canCancel && (
             <button
               onClick={() => {
-                if (window.confirm("Are you sure you want to cancel this ticket? This action cannot be undone.")) {
+                // Calculate refund based on time until show
+                const showDateTime = new Date(`${ticket.date}T${ticket.time}`)
+                const now = new Date()
+                const hoursUntilShow = (showDateTime - now) / (1000 * 60 * 60)
+
+                let refundPercentage = 0
+                if (hoursUntilShow >= 24) refundPercentage = 100
+                else if (hoursUntilShow >= 2) refundPercentage = 50
+
+                const message = refundPercentage > 0
+                  ? `Bạn có chắc muốn hủy vé này?\n\nSố tiền hoàn lại: ${refundPercentage}% (${(ticket.totalAmount * refundPercentage / 100).toLocaleString('vi-VN')} ₫)\n\nTiền sẽ được hoàn vào ví của bạn.`
+                  : `Bạn có chắc muốn hủy vé này?\n\n⚠️ Không được hoàn tiền (còn <2h trước suất chiếu)`
+
+                if (window.confirm(message)) {
                   onCancel()
                 }
               }}
-              className="mt-4 text-red-500 hover:text-red-400 text-sm font-semibold transition-colors duration-200 flex items-center gap-1"
+              className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 w-full"
             >
               <X className="w-4 h-4" />
-              Cancel Ticket
+              Hủy Vé
             </button>
           )}
         </div>
